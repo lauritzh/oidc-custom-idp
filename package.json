@@ -1,0 +1,16 @@
+{
+  "name": "idp",
+  "version": "1.0.0",
+  "description": "Demo IdP",
+  "main": "idp.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Lauritz Holtmann",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "https": "^1.0.0",
+    "jsonwebtoken": "^8.5.1"
+  }
+}
