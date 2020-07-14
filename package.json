@@ -9,6 +9,7 @@
   "author": "Lauritz Holtmann",
   "license": "ISC",
   "dependencies": {
+    "base64url": "^3.0.1",
     "express": "^4.17.1",
     "https": "^1.0.0",
     "jsonwebtoken": "^8.5.1"

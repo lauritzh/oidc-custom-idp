@@ -1,6 +1,7 @@
 # Custom OpenID Connect Identity Provider
 Custom and flexible OpenID Connect IdP for research and PoC purposes - built with Node.js.
 
+
 ## Setup
 ```Bash
 user@laptop:/$ git clone https://github.com/lauritzh/oidc-custom-idp
@@ -14,3 +15,7 @@ user@laptop:/oidc-custom-idp$ node idp.js
 (This requires Node.js on your machine)
 
 You may add "127.0.0.1 poc.local" to your `/etc/hosts`-file, so that you can reach the IdP at https://poc.local:3001/
+
+
+## Modifications
+You may manually modify the `id_token` generation by setting `useJWTLib` to `false` and adjusting `createIdToken()`.
