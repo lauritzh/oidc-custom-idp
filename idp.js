@@ -32,16 +32,20 @@ let app = express();
 /////////////////////////////////////////////////////////////////////////////////////////
 
 // Constants
+// Security feature: If the IdP is exposed to the internet, third parties can gather sensitive information on endpoints => introduce secret path prefix TODO: generate new prefix using SHA256(secret)
+const path_prefix = "";
 //// endpoints - add "127.0.0.1 poc.local" to your /etc/hosts file!
-const authEndpoint = "https://poc.local:3001/auth";
-const tokenEndpoint = "https://poc.local:3001/token";
-const userinfoEndpoint = "https://poc.local:3001/userinfo";
-const jwksEndpoint = "https://poc.local:3001/jwks";
-const registrationEndpoint = "https://poc.local:3001/register";
-const configurationEndpoint = "https://poc.local:3001/.well-known/openid-configuration";
+const host = "https://poc.local:3001";
+const authEndpoint = `${host}${path_prefix}/auth`;
+const tokenEndpoint = `${host}${path_prefix}/token`;
+const userinfoEndpoint = `${host}${path_prefix}/userinfo`;
+const jwksEndpoint = `${host}${path_prefix}/jwks`;
+const registrationEndpoint = `${host}${path_prefix}/register`;
+const configurationEndpoint = `${host}${path_prefix}/.well-known/openid-configuration`;
+
 
 //// claims
-const iss = "https://poc.local:3001";
+const iss = host;
 const sub = "TestUser";
 const name = "Toni Test";
 const email = "mail@lauritz-holtmann.de";
@@ -55,7 +59,7 @@ const client_secret = "supersecret";
 
 //// tokens
 const access_token = "AccessToken";
-const refresh_token = "RefreshToken"
+const refresh_token = "RefreshToken";
 const code = "code_abcde";
 
 // SP provided Variables
@@ -129,7 +133,6 @@ let landingPage = `
 </ul>
 `;
 
-let authResponse = `Redirecting...`;
 let tokenResponse = {"access_token": access_token, "refresh_token": refresh_token, "token_type": "Bearer", "expires_in": "3600", "id_token": createIdToken()};
 let userinfoResponse = {"sub": sub, "name": name, "email": email};
 let configurationResponse = {"issuer": iss, "authorization_endpoint": authEndpoint, "token_endpoint": tokenEndpoint, "userinfo_endpoint": userinfoEndpoint, "jwks_uri": jwksEndpoint, "registration_endpoint": registrationEndpoint, "response_types_supported": ["code", "token id_token"], "subject_types_supported": ["public", "pairwise"], "id_token_signing_alg_values_supported": ["RS256"]};
@@ -144,16 +147,24 @@ function refreshTokenResponse() {
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 
+// public landing page
+//app.get("/", function (req, res) {
+//  console.log(`\n  [${req.ip}] public landing page`);
+//  console.dir(req);
+//  res.send("Nothing to see here.");
+//});
+
 // landing page
-app.get("/", function (req, res) {
-  console.log(`  [${req.ip}] landing page`);
+app.get(path_prefix+"/", function (req, res) {
+  console.log(`\n  [${req.ip}] landing page`);
   
   res.send(landingPage);
 });
 
 // auth endpoint
-app.get("/auth", function (req, res) {
-  console.log(`  [${req.ip}] auth endpoint (GET)`);
+app.get(path_prefix+"/auth", function (req, res) {
+  console.log(`\n  [${req.ip}] auth endpoint (GET)`);
+  if(!req.connection.encrypted) console.log('\x1b[41m\x1b[37mUNENCRYPTED CONNECTION!\x1b[0m');
   state = req.query.state;
   nonce = req.query.nonce;
 
@@ -169,55 +180,83 @@ app.get("/auth", function (req, res) {
 });
 
 // userinfo endpoint
-app.get("/userinfo", function (req, res) {
-  console.log(`  [${req.ip}] userinfo endpoint`);
+app.get(path_prefix+"/userinfo", function (req, res) {
+  console.log(`\n  [${req.ip}] userinfo endpoint (GET)`);
+  if(!req.connection.encrypted) console.log('\x1b[41m\x1b[37mUNENCRYPTED CONNECTION!\x1b[0m');
+  console.log("      [+] Request headers:");
+  console.dir(req.headers);
+  console.log(`      [*] Data to be sent: ${JSON.stringify(userinfoResponse)}`);
+  
+  res.json(userinfoResponse);
+});
+app.post(path_prefix+"/userinfo", function (req, res) {
+  console.log(`\n  [${req.ip}] userinfo endpoint (POST)`);
+  if(!req.connection.encrypted) console.log('\x1b[41m\x1b[37mUNENCRYPTED CONNECTION!\x1b[0m');
+  console.log("      [+] Request headers:");
+  console.dir(req.headers);
   console.log(`      [*] Data to be sent: ${JSON.stringify(userinfoResponse)}`);
   
   res.json(userinfoResponse);
 });
 
 // configuration endpoint
-app.get("/.well-known/openid-configuration", function (req, res) {
-  console.log(`  [${req.ip}] configuration endpoint`);
+app.get(path_prefix+"/.well-known/openid-configuration", function (req, res) {
+  console.log(`\n  [${req.ip}] configuration endpoint`);
+  if(!req.connection.encrypted) console.log('\x1b[41m\x1b[37mUNENCRYPTED CONNECTION!\x1b[0m');
+  console.log("      [+] Request headers:");
+  console.dir(req.headers);
   console.log(`      [*] Data to be sent: ${JSON.stringify(configurationResponse)}`);
   
   res.json(configurationResponse);
 });
 
 // token endpoint
-app.post("/token", function (req, res) {
+app.post(path_prefix+"/token", function (req, res) {
   // craft token response based on provided nonce and fresh timestamps
   refreshTokenResponse();
 
-  console.log(`  [${req.ip}] token endpoint`);
+  console.log(`\n  [${req.ip}] token endpoint`);
+  if(!req.connection.encrypted) console.log('\x1b[41m\x1b[37mUNENCRYPTED CONNECTION!\x1b[0m');
+  console.log("      [+] Request headers:");
+  console.dir(req.headers);
   console.log(`      [*] Data to be sent: ${JSON.stringify(tokenResponse)}`);
   
   res.json(tokenResponse);
 });
 
 // jwks endpoint
-app.get("/jwks", function (req, res) {
-  console.log(`  [${req.ip}] jwks endpoint`);
+app.get(path_prefix+"/jwks", function (req, res) {
+  console.log(`\n  [${req.ip}] jwks endpoint`);
   console.log(`      [*] Data to be sent: ${JSON.stringify(jwksResponse)}`);
 
   res.json(jwksResponse);
 });
 
 // registration endpoint
-app.get("/register", function (req, res) {
-  console.log(`  [${req.ip}] registration endpoint`);
+app.get(path_prefix+"/register", function (req, res) {
+  console.log(`\n  [${req.ip}] registration endpoint`);
   console.log(`      [*] Data to be sent: ${JSON.stringify(registrationResponse)}`);
   
   res.status(204).send();
 });
 
-app.post("/register", function (req, res) {
-  console.log(`  [${req.ip}] registration endpoint`);
+app.post(path_prefix+"/register", function (req, res) {
+  console.log(`\n  [${req.ip}] registration endpoint`);
   console.log(`      [*] Data to be sent: ${JSON.stringify(registrationResponse)}`);
   
   res.status(201);
   res.json(registrationResponse);
 });
+
+// log endpoint - logs request, configure SP to use this endpoint as userinfo or token endpoint to debug incoming request :-)
+app.get(path_prefix+"/log", function (req, res) {
+  console.log(`\n  [${req.ip}] log endpoint`);
+  console.log("      [+] Request headers:");
+  console.dir(req.headers);
+  
+  res.json(req.headers);
+});
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 app.listen(3000, function () {
