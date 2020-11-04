@@ -1,6 +1,7 @@
 # Custom OpenID Connect Identity Provider
 Custom and flexible OpenID Connect IdP for research and PoC purposes - built with Node.js.
 
+**Disclaimer**: *Any information shared within this repository must not be used with malicious intentions. Proof-of-Concepts and tools are shared for educational purpose only. Any malicious use will not hold the author responsible.*
 
 ## Setup
 ```Bash
